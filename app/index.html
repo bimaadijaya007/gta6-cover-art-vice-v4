@@ -3,20 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cover Snap</title>
+<title>Vice Cover Studio — GTA 6-style cover art maker</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <main class="app">
-  <section class="controls">
-    <h1>Cover Snap</h1>
-    <p>A photo and a caption, made into a square cover.</p>
-    <label>Photo <input id="photo" type="file" accept="image/*"></label>
-    <label>Caption <input id="caption" type="text" maxlength="40" value="Sunset Heist"></label>
-    <button id="export" type="button">Export PNG 1080 x 1080</button>
+  <section class="controls" aria-label="Cover controls">
+    <h1>Vice Cover Studio</h1>
+    <p class="tag">Turn your photo and a caption into poster-style cover art. Works fully offline.</p>
+
+    <h2>Photos</h2>
+    <label>Photo A <input id="upload-a" type="file" accept="image/*"></label>
+    <label>Photo B <input id="upload-b" type="file" accept="image/*"></label>
+    <label>Photo C <input id="upload-c" type="file" accept="image/*"></label>
+    <p class="hint">Two sample photos are loaded for you. Upload up to three of your own, or reuse one photo in every panel.</p>
+
+    <h2>Layout</h2>
+    <div id="layouts" class="row" role="group" aria-label="Layout"></div>
+
+    <h2>Panels</h2>
+    <p class="hint">Pick a photo and zoom per panel. Drag a panel on the cover to pan it.</p>
+    <div id="panels"></div>
+
+    <h2>Caption</h2>
+    <label>Title <input id="title" type="text" maxlength="30" value="VICE CITY"></label>
+    <label>Tagline <input id="tagline" type="text" maxlength="60" value="Welcome back to Vice City"></label>
+
+    <h2>Colour grade</h2>
+    <label>Grade <select id="grade"></select></label>
+
+    <h2>Export</h2>
+    <div id="exports" class="stack"></div>
     <p id="status" role="status"></p>
   </section>
-  <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
+  <canvas id="stage" width="900" height="900" aria-label="The cover preview"></canvas>
 </main>
 <script type="module" src="./src/main.js"></script>
 </body>

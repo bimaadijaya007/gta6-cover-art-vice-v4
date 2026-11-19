@@ -1,40 +1,68 @@
-// A working gta6-cover-art-01 entry (Node 22, standard library only): the app is this directory's app/ folder, plain
-// static files a desktop browser loads offline (app/index.html and its ES modules, no library and no network
-// request), and the program hands it in. It copies app/ and screenshots/ from beside this file to /output and writes
-// /output/dossier.json, the summary the judge reads, with the vendored make.fun library. Only the plumbing, not the
-// cover art the bounty asks for: Cover Snap, a plain one-photo square cover with a sunset tint and a bold caption,
-// exported as a 1080 x 1080 PNG. Its two sample photos (app/samples/) were made for make.fun with an image model and
-// are free to use. Build your own GTA-style cover maker in its place, put your 3 or 4 PNG or JPEG screenshots in
-// screenshots/ (the first by name is the cover) and run it.
+// Vice Cover Studio — the entry program (Node 22, standard library only).
+// Copies app/ and screenshots/ from beside this file into the output
+// directory and writes /output/dossier.json with the vendored make.fun
+// library (vendor/makefun-app.ts, unchanged from the kit).
 //
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+//   MAKEFUN_OUTPUT_DIR=/tmp/out node main.ts
+// Without MAKEFUN_OUTPUT_DIR it writes to /output, as the grader expects.
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-mkdirSync(out, { recursive: true });
-cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
-if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
+/** Copy a directory tree, refusing when the source is missing. */
+function copyTree(name) {
+  const src = join(here, name);
+  if (!existsSync(src)) throw new Error(`missing ${name}/ beside main.ts`);
+  cpSync(src, join(outDir, name), { recursive: true });
+  const entries = readdirSync(join(outDir, name), { recursive: true });
+  console.log(`copied ${name}/ (${entries.length} entries)`);
+}
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
-// scorer would refuse (more than 4 screenshots or one over 256 KiB; more than 993 files in app/ or 48 MiB of app
-// files, in all, or a path under app/ over 1000 bytes: app/ counts beside /output's own 1000-entry cap, its
-// screenshots/ and dossier.json).
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
+/** The caps the scorer's gate.json applies to this bounty. */
+function gateCaps() {
+  return {
     text_max_bytes: 163840,
     screenshots: { max: 4, max_bytes: 262144 },
     app_max_files: 993,
     app_max_bytes: 50331648,
     app_path_max_bytes: 1000,
-  }),
-);
+  };
+}
+
+/**
+ * Refuse early when the screenshots break the gate, instead of letting
+ * buildDossier fail after the copy: at most 4 images, each at most 256 KiB.
+ */
+function checkScreenshots() {
+  const dir = join(here, 'screenshots');
+  if (!existsSync(dir)) throw new Error('missing screenshots/ beside main.ts');
+  const files = readdirSync(dir).filter((f) => !f.startsWith('.'));
+  const caps = gateCaps().screenshots;
+  if (files.length === 0) throw new Error('screenshots/: no images');
+  if (files.length > caps.max) throw new Error(`screenshots/: ${files.length} images, over the ${caps.max} allowed`);
+  for (const f of files) {
+    const size = statSync(join(dir, f)).size;
+    if (size > caps.max_bytes) throw new Error(`screenshots/${f}: ${size} bytes, over the ${caps.max_bytes} allowed`);
+  }
+  console.log(`screenshots ok: ${files.length} images, largest ${Math.max(...files.map((f) => statSync(join(dir, f)).size))} bytes`);
+}
+
+checkScreenshots();
+mkdirSync(outDir, { recursive: true });
+copyTree('app');
+mkdirSync(join(outDir, 'screenshots'), { recursive: true });
+copyTree('screenshots');
+
+const dossier = buildDossier(outDir, gateCaps());
+writeFileSync(join(outDir, 'dossier.json'), dossier);
+// Round-trip check: the file on disk must parse back to the same dossier.
+const reread = JSON.parse(new TextDecoder().decode(readFileSync(join(outDir, 'dossier.json'))));
+if (reread.schema !== 'makefun/dossier/v1') throw new Error('dossier.json: unexpected schema after round-trip');
+const shotCount = readdirSync(join(outDir, 'screenshots')).filter((f) => !f.startsWith('.')).length;
+console.log(`wrote dossier.json (${dossier.length} bytes, ${shotCount} screenshots)`);
+console.log(`entry ready in ${outDir}`);
