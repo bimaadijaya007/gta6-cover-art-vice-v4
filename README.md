@@ -1,8 +1,8 @@
 # Vice Cover Studio
 
-[![gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
-[![rank](https://make.fun/badge/rank.svg?owner=bimaadijaya007&repo=gta6-cover-art-vice-v4)](https://make.fun/bounty/gta6-cover-art-01)
-[![reward](https://make.fun/badge/reward.svg?owner=bimaadijaya007&repo=gta6-cover-art-vice-v4)](https://make.fun/bounty/gta6-cover-art-01)
+[![make.fun · gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![rank](https://make.fun/badge/gta6-cover-art-01/bimaadijaya007/gta6-cover-art-vice-v4/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![reward](https://make.fun/badge/gta6-cover-art-01/bimaadijaya007/gta6-cover-art-vice-v4/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
 Vice Cover Studio turns your photo and a caption into cover art in the
 style of GTA 6's posters — multi-panel layouts, sunset and neon colour
